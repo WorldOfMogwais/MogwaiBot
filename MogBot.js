@@ -12,7 +12,6 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
-
 	// set a new item in the Collection
 	// with the key as the command name and the value as the exported module
 	client.commands.set(command.name, command);
@@ -24,17 +23,54 @@ client.once('ready', () => {
 	console.log('Ready!');
 });
 
+//Daily Report timing
+
+var now = new Date();
+var millisTillRep = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0) - now;
+if (millisTillRep < 0) {
+	millisTillRep += 86400000;
+}
+
+setTimeout(DailyRep, millisTillRep);
+
+
+
+
+client.on('message', message => {
+
+	if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+	const args = message.content.slice(prefix.length).split(/ +/);
+	const command = args.shift().toLowerCase();
+
+	if (command === 'ping') {
+		client.commands.get('ping').execute(message, args);
+	}else if (command === 'burntoday') {
+		client.commands.get('burntoday').execute(message, args);
+	}else if (command === 'burnweek') {
+		client.commands.get('burnweek').execute(message, args);
+	}else if (command === 'burnmonth') {
+		client.commands.get('burnmonth').execute(message, args);
+	}	
+});
+
+
+// login to Discord with your app's token
+client.login(token);
+
+
+
 
 //Daily Report
-client.setInterval(reportDay, 5000);
 
-	function reportDay(){
-	
-		var burnMogToday,burnMogWeek,burnMogMonth
-		
+function DailyRep(){
+
+	const channel = client.channels.cache.get(dayRepID);
+	channel.send('This is today daily MOG Burn Repport: ');
+	var burnMogToday,burnMogWeek,burnMogMonth	
 	//Daily Value	
-	var request = require('request');
-	request(
+	var request1 = require('request');
+	request1(
     'https://analytics.mogwaicoin.org/?module=API&method=API.get&idSite=3&period=day&date=today&columns=revenue&format=json&token_auth=21da93f1dd7d86e815ae6060aba58554', 
     function (error, response, body) {
         if (response.statusCode === 200) {
@@ -47,105 +83,38 @@ client.setInterval(reportDay, 5000);
     }
 	);
 	//Weekly Value
-	request(
+	var request2 = require('request');
+	request2(
 		'https://analytics.mogwaicoin.org/?module=API&method=API.get&idSite=3&period=week&date=today&columns=revenue&format=json&token_auth=21da93f1dd7d86e815ae6060aba58554', 
 		function (error, response, body) {	
 			if (response.statusCode === 200) {
 				var bodyObj = JSON.parse(body);
 				burnMogWeek = bodyObj.value;
 			console.log('Result Report Week: ' + burnMogWeek);
-			const channel = client.channels.cache.get('568083152200007697');
+			const channel = client.channels.cache.get(dayRepID);
 			channel.send('Week : ' + burnMogWeek);
+			flag2 =true;
 			}
 		}
 		);
+	
 		// Montly Value
-		request(
+		var request3 = require('request');
+		request3(
 			'https://analytics.mogwaicoin.org/?module=API&method=API.get&idSite=3&period=month&date=today&columns=revenue&format=json&token_auth=21da93f1dd7d86e815ae6060aba58554', 
 			function (error, response, body) {	
 				if (response.statusCode === 200) {
 					var bodyObj = JSON.parse(body);	
 					burnMogMonth = bodyObj.value;
 				console.log('Result Report Month: ' + burnMogMonth);
-				const channel = client.channels.cache.get('568083152200007697');
+				const channel = client.channels.cache.get(dayRepID);
 				channel.send('Month : ' + burnMogMonth);
+				flag1 = false;
+				flag2 = false;
 				}
 			}
 			);
-
-	}
-
-
-client.on('message', message => {
-
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-	const args = message.content.slice(prefix.length).split(/ +/);
-	const command = args.shift().toLowerCase();
-
-
-	if (command === 'ping') {
-		message.channel.send('Ponggggg.');
-	}
-
-	//How many MOG have been burned today
-	else if (message.content === `${prefix}burntoday`) {
-	var request = require('request');
-	request(
-    'https://analytics.mogwaicoin.org/?module=API&method=API.get&idSite=3&period=day&date=today&columns=revenue&format=json&token_auth=21da93f1dd7d86e815ae6060aba58554', 
-    function (error, response, body) {
-
-        if (response.statusCode === 200) {
-            var bodyObj = JSON.parse(body);
-
-            var burnMog = bodyObj.value;
-        console.log('Ergebnisse insgesamt: ' + burnMog);
-		 
-		message.channel.send(`Today : ${burnMog} MOG have been burned`);
-        }
-    }
-	);
-	}
-	//How many MOG have been burned this week
-	else if (message.content === `${prefix}burnweek`) {
-		var request = require('request');
-		request(
-		'https://analytics.mogwaicoin.org/?module=API&method=API.get&idSite=3&period=week&date=today&columns=revenue&format=json&token_auth=21da93f1dd7d86e815ae6060aba58554', 
-		function (error, response, body) {
-	
-			if (response.statusCode === 200) {
-				var bodyObj = JSON.parse(body);
-	
-				var burnMog = bodyObj.value;
-			console.log('Ergebnisse insgesamt: ' + burnMog);
-			 
-			message.channel.send(`This Week : ${burnMog} MOG have been burned`);
-			}
 		}
-		);
-		}
-		
-		//How many MOG have been burned this month
-		else if (message.content === `${prefix}burnmonth`) {
-			var request = require('request');
-			request(
-			'https://analytics.mogwaicoin.org/?module=API&method=API.get&idSite=3&period=month&date=today&columns=revenue&format=json&token_auth=21da93f1dd7d86e815ae6060aba58554', 
-			function (error, response, body) {
-		
-				if (response.statusCode === 200) {
-					var bodyObj = JSON.parse(body);
-		
-					var burnMog = bodyObj.value;
-				console.log('Ergebnisse insgesamt: ' + burnMog);
-				 
-				message.channel.send(`This Month : ${burnMog} MOG have been burned`);
-				}
-			}
-			);
-			}
-});
+	
 
-
-// login to Discord with your app's token
-client.login(token);
 
