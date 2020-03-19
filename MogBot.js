@@ -27,7 +27,7 @@ client.once('ready', () => {
 var t;
 
 var now = new Date();
-var millisTillRep = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 03, 0, 0) - now;
+var millisTillRep = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 00, 0, 0) - now;
 if (millisTillRep < 0) {
 	millisTillRep += 86400000;
 	console.log('Timer cleared');
