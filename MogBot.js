@@ -24,14 +24,18 @@ client.once('ready', () => {
 });
 
 //Daily Report timing
+var t;
 
 var now = new Date();
-var millisTillRep = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0) - now;
+var millisTillRep = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 03, 0, 0) - now;
 if (millisTillRep < 0) {
 	millisTillRep += 86400000;
+	console.log('Timer cleared');
 }
 
-setTimeout(DailyRep, millisTillRep);
+t = setTimeout(DailyRep, millisTillRep);
+//setInterval(IntervallTime, 5000);
+
 
 
 
@@ -58,15 +62,12 @@ client.on('message', message => {
 // login to Discord with your app's token
 client.login(token);
 
-
-
-
 //Daily Report
 
 function DailyRep(){
 
 	const channel = client.channels.cache.get(dayRepID);
-	channel.send('This is today daily MOG Burn Repport: ');
+	channel.send('This is todays daily MOG Burn Repport: ');
 	var burnMogToday,burnMogWeek,burnMogMonth	
 	//Daily Value	
 	var request1 = require('request');
@@ -93,7 +94,6 @@ function DailyRep(){
 			console.log('Result Report Week: ' + burnMogWeek);
 			const channel = client.channels.cache.get(dayRepID);
 			channel.send('Week : ' + burnMogWeek);
-			flag2 =true;
 			}
 		}
 		);
@@ -109,11 +109,11 @@ function DailyRep(){
 				console.log('Result Report Month: ' + burnMogMonth);
 				const channel = client.channels.cache.get(dayRepID);
 				channel.send('Month : ' + burnMogMonth);
-				flag1 = false;
-				flag2 = false;
 				}
 			}
 			);
+			clearTimeout(t);
+			console.log('Timer Nb' + t + ' cleared');
 		}
 	
 
