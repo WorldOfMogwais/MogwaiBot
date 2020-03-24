@@ -4,6 +4,7 @@ const fs = require('fs');
 // require the discord.js module
 const Discord = require('discord.js');
 const { prefix, token, dayRepID } = require('./config.json');
+const schedule = require('node-schedule');
 
 // create a new Discord client
 const client = new Discord.Client();
@@ -23,21 +24,12 @@ client.once('ready', () => {
 	console.log('Ready!');
 });
 
-//Daily Report timing
-var t;
+//Daily Report sheduler
 
-var now = new Date();
-var millisTillRep = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 00, 0, 0) - now;
-if (millisTillRep < 0) {
-	millisTillRep += 86400000;
-	console.log('Timer cleared');
-}
-
-t = setTimeout(DailyRep, millisTillRep);
-//setInterval(IntervallTime, 5000);
-
-
-
+var j = schedule.scheduleJob('50 50 22 * * *', function(){
+	DailyRep();
+	console.log('Daily repport executed');
+  });
 
 
 client.on('message', message => {
@@ -77,7 +69,7 @@ function DailyRep(){
         if (response.statusCode === 200) {
             var bodyObj = JSON.parse(body);
             burnMogToday = bodyObj.value;
-		console.log('Result Report Today:: ' + burnMogToday);
+		console.log('Result Report Today: ' + burnMogToday);
 		const channel = client.channels.cache.get(dayRepID);
 		channel.send('Today : ' + burnMogToday);
         }
@@ -112,8 +104,6 @@ function DailyRep(){
 				}
 			}
 			);
-			clearTimeout(t);
-			console.log('Timer Nb' + t + ' cleared');
 		}
 	
 
